@@ -28,14 +28,18 @@ public class LocalDeviceFinder
         client.Close();
     }
     
+    private bool isReceiving = false;
+    private Thread receiveThread;
+
     public void StartReceiving(int port, Action<DeviceData> onReceiveData)
     {
-        Thread thread = new Thread(() =>
+        isReceiving = true;
+        receiveThread = new Thread(() =>
         {
             UdpClient client = new UdpClient(port);
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
 
-            while (true)
+            while (isReceiving)
             {
                 byte[] bytes = client.Receive(ref ip);
                 string jsonString = Encoding.ASCII.GetString(bytes);
@@ -43,9 +47,21 @@ public class LocalDeviceFinder
                 Debug.Log($"Received message: {jsonString} from {deviceName} {GetLocalIPAddress()} sender {ip.Address}");
                 onReceiveData?.Invoke(data);
             }
+
+            client.Close();
         });
 
-        thread.Start();
+        receiveThread.Start();
+    }
+
+    public void StopReceiving()
+    {
+        isReceiving = false;
+        if (receiveThread != null)
+        {
+//            receiveThread.Join(); // Wait for the thread to finish
+            receiveThread = null;
+        }
     }
     
     public void Ack(int rcvPort, int sndPort)

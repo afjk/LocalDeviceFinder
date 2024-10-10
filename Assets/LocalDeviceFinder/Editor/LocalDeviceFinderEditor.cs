@@ -28,9 +28,11 @@ public class LocalDeviceFinderEditor : EditorWindow
 
         if (GUILayout.Button("Send Broadcast"))
         {
-            // StartScanning(sndPort, rcvPort, message);
-            finder = new LocalDeviceFinder();
-            finder.Initialize();
+            if (finder == null)
+            {
+                finder = new LocalDeviceFinder();
+                finder.Initialize();
+            }
             finder.SendBroadcast(sndPort, message);
         }
         
@@ -83,6 +85,7 @@ public class LocalDeviceFinderEditor : EditorWindow
     {
         Debug.Log("Stop scanning...");
         StopSendingBroadcast();
+        finder.StopReceiving();
     }
     
     public void StartSendingBroadcast(int port, string message)
