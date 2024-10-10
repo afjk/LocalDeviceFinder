@@ -1,0 +1,18 @@
+{
+    "name": "LocalDeviceFinder.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:1a3710859a9f9474ba541599db1d7785"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
