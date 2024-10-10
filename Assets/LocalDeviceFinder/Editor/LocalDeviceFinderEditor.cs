@@ -26,9 +26,17 @@ public class LocalDeviceFinderEditor : EditorWindow
         rcvPort = EditorGUILayout.IntField("Receive Port", rcvPort);
         message = EditorGUILayout.TextField("Message", message);
 
-        if (GUILayout.Button("Start"))
+        if (GUILayout.Button("Send Broadcast"))
         {
-            StartScanning(sndPort, rcvPort, message);
+            // StartScanning(sndPort, rcvPort, message);
+            finder = new LocalDeviceFinder();
+            finder.Initialize();
+            finder.SendBroadcast(sndPort, message);
+        }
+        
+        if (GUILayout.Button("Start Receiving"))
+        {
+            finder.StartReceiving(rcvPort, OnReceiveDeviceData);
         }
         
         if (GUILayout.Button("Stop"))
