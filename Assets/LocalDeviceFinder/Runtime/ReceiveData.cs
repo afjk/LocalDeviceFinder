@@ -23,6 +23,7 @@ public class ReceiveData
 
     public static ReceiveData FromJson(string jsonString)
     {
+        Debug.Log(jsonString);
         return JsonUtility.FromJson<ReceiveData>(jsonString);
     }
 }
