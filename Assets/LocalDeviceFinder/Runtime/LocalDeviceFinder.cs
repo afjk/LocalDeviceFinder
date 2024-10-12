@@ -79,7 +79,8 @@ public class LocalDeviceFinder
         StartReceiving(rcvPort, data =>
         {
             Debug.Log($"Received message from {data.DeviceName} {data.FromIPAddress}: {data.Message}");
-            SendTo(sndPort, "", data.FromIPAddress);
+            var rcvData = new ReceiveData(deviceName, GetLocalIPAddress(), data.FromIPAddress, "ack");
+            SendTo(sndPort, rcvData.ToJson(), data.FromIPAddress);
         });
     }
 
