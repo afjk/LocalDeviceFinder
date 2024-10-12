@@ -76,7 +76,7 @@ public class LocalDeviceFinder
         StartReceiving(rcvPort, data =>
         {
             Debug.Log($"Received message from {data.DeviceName} {data.FromIPAddress}: {data.Message}");
-            SendTo(sndPort, "", data.IPAddress);
+            SendTo(sndPort, "", data.FromIPAddress);
         });
     }
 
