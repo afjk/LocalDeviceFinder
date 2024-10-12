@@ -32,6 +32,7 @@ public class LocalDeviceFinder
     private bool isReceiving = false;
     private Thread receiveThread;
 
+    private UdpClient rcClient;
     public void StartReceiving(int port, Action<ReceiveData> onReceiveData)
     {
         if (isReceiving)
@@ -43,14 +44,14 @@ public class LocalDeviceFinder
         isReceiving = true;
         receiveThread = new Thread(() =>
         {
-            UdpClient client = new UdpClient(port);
-            client.EnableBroadcast = true;
-            client.MulticastLoopback = false;
+            rcClient = new UdpClient(port);
+            rcClient.EnableBroadcast = true;
+            rcClient.MulticastLoopback = false;
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
 
             while (isReceiving)
             {
-                byte[] bytes = client.Receive(ref ip);
+                byte[] bytes = rcClient.Receive(ref ip);
                 string message = Encoding.ASCII.GetString(bytes);
                 try
                 {
@@ -67,7 +68,7 @@ public class LocalDeviceFinder
                 }
             }
 
-            client.Close();
+            rcClient.Close();
             Debug.Log($"Close port:{port}");
         });
 
@@ -81,6 +82,7 @@ public class LocalDeviceFinder
         {
             receiveThread = null;
         }
+        rcClient.Close();
     }
     
     public void Ack(int rcvPort, int sndPort)
