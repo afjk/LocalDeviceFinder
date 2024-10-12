@@ -14,14 +14,15 @@ public class LocalDeviceFinder
         deviceName = SystemInfo.deviceName;
     }
     
-    public void SendBroadcast(int port, string message)
+    public void SendBroadcast(int port)
     {
-        SendTo(port, message, IPAddress.Broadcast.ToString());
+        SendTo(port, "", IPAddress.Broadcast.ToString());
     }
     
     public void SendTo(int port, string message, string targetIP)
     {
         UdpClient client = new UdpClient();
+        client.MulticastLoopback = false;
         IPEndPoint ip = new IPEndPoint(IPAddress.Parse(targetIP), port);
         byte[] bytes = Encoding.ASCII.GetBytes(message);
         client.Send(bytes, bytes.Length, ip);
@@ -31,7 +32,7 @@ public class LocalDeviceFinder
     private bool isReceiving = false;
     private Thread receiveThread;
 
-    public void StartReceiving(int port, Action<DeviceData> onReceiveData)
+    public void StartReceiving(int port, Action<ReceiveData> onReceiveData)
     {
         isReceiving = true;
         receiveThread = new Thread(() =>
@@ -42,9 +43,8 @@ public class LocalDeviceFinder
             while (isReceiving)
             {
                 byte[] bytes = client.Receive(ref ip);
-                string jsonString = Encoding.ASCII.GetString(bytes);
-                DeviceData data = new DeviceData(deviceName, GetLocalIPAddress(), ip.Address.ToString());
-                Debug.Log($"Received message: {jsonString} from {deviceName} {GetLocalIPAddress()} sender {ip.Address}");
+                string message = Encoding.ASCII.GetString(bytes);
+                ReceiveData data = new ReceiveData(deviceName, GetLocalIPAddress(), ip.Address.ToString(), message);
                 onReceiveData?.Invoke(data);
             }
 
@@ -59,7 +59,6 @@ public class LocalDeviceFinder
         isReceiving = false;
         if (receiveThread != null)
         {
-//            receiveThread.Join(); // Wait for the thread to finish
             receiveThread = null;
         }
     }
@@ -68,7 +67,7 @@ public class LocalDeviceFinder
     {
         StartReceiving(rcvPort, data =>
         {
-            SendTo(sndPort, data.ToJson(), data.IPAddress);
+            SendTo(sndPort, "", data.IPAddress);
         });
     }
 

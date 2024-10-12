@@ -8,9 +8,8 @@ public class LocalDeviceFinderEditor : EditorWindow
 {
     private int sndPort = 8080;
     private int rcvPort = 8081;
-    private string message;
     private LocalDeviceFinder finder;
-    private List<DeviceData> deviceList = new List<DeviceData>(); // List to hold the devices
+    private List<ReceiveData> deviceList = new(); // List to hold the devices
 
     [MenuItem("Tools/Local Device Finder")]
     public static void ShowWindow()
@@ -24,26 +23,31 @@ public class LocalDeviceFinderEditor : EditorWindow
 
         sndPort = EditorGUILayout.IntField("Send Port", sndPort);
         rcvPort = EditorGUILayout.IntField("Receive Port", rcvPort);
-        message = EditorGUILayout.TextField("Message", message);
 
-        if (GUILayout.Button("Send Broadcast"))
+        if (GUILayout.Button("Start Finding"))
         {
             if (finder == null)
             {
                 finder = new LocalDeviceFinder();
                 finder.Initialize();
             }
-            finder.SendBroadcast(sndPort, message);
+            finder.SendBroadcast(sndPort);
+            finder.StartReceiving(rcvPort,OnReceiveDeviceData);
         }
         
-        if (GUILayout.Button("Start Receiving"))
+        if (GUILayout.Button("Start Receiver"))
         {
-            finder.StartReceiving(rcvPort, OnReceiveDeviceData);
+            if (finder == null)
+            {
+                finder = new LocalDeviceFinder();
+                finder.Initialize();
+            }
+            finder.Ack(rcvPort, sndPort);
         }
         
-        if (GUILayout.Button("Stop"))
+        if (GUILayout.Button("Stop Receiver"))
         {
-            StopScanning();
+            finder?.StopReceiving();
         }
 
         // Display the list of devices
@@ -52,56 +56,16 @@ public class LocalDeviceFinderEditor : EditorWindow
             GUILayout.Label($"Device: {device.DeviceName}, IP: {device.IPAddress}");
         }
     }
-
-    public void StartScanning(int sndPort,int rcvPort, string message)
-    {
-        Debug.Log("Start scanning...");
-
-        if (finder == null)
-        {
-            finder = new LocalDeviceFinder();
-        }
-
-        finder.StartReceiving(rcvPort, OnReceiveDeviceData); // Set the callback to update the device list
-
-        StartSendingBroadcast(sndPort, message);
-    }
-
-    // This method is called when a DeviceData is received
-    private void OnReceiveDeviceData(DeviceData data)
+    
+    private void OnReceiveDeviceData(ReceiveData data)
     {
         // Add the received DeviceData to the list
         deviceList.Add(data);
-
+    
         // Sort the list by IP address
         deviceList = deviceList.OrderBy(deviceData => deviceData.IPAddress).Distinct().ToList();
-
+    
         // Schedule the Repaint to be executed on the main thread
         UnityEditor.EditorApplication.delayCall += Repaint;
     }
-
-    private Timer timer;
-    public void StopScanning()
-    {
-        Debug.Log("Stop scanning...");
-        StopSendingBroadcast();
-        finder.StopReceiving();
-    }
-    
-    public void StartSendingBroadcast(int port, string message)
-    {
-        timer = new System.Timers.Timer(1000); // Set the interval to 1 second
-        timer.Elapsed += (sender, e) => finder.SendBroadcast(port, message);
-        timer.Start();
-    }
-    
-    public void StopSendingBroadcast()
-    {
-        if (timer != null)
-        {
-            timer.Stop();
-            timer = null;
-        }
-    }
-
 }
