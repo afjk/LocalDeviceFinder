@@ -68,6 +68,7 @@ public class LocalDeviceFinder
             }
 
             client.Close();
+            Debug.Log($"Close port:{port}");
         });
 
         receiveThread.Start();
