@@ -54,19 +54,20 @@ public class LocalDeviceFinderEditor : EditorWindow
         }
 
         // Display the list of devices
-        foreach (var device in deviceList.OrderBy(deviceData => deviceData.IPAddress))
+        foreach (var device in deviceList.OrderBy(deviceData => deviceData.FromIPAddress))
         {
-            GUILayout.Label($"Device: {device.DeviceName}, IP: {device.IPAddress}");
+            GUILayout.Label($"Device: {device.DeviceName}, IP: {device.FromIPAddress}");
         }
     }
     
     private void OnReceiveDeviceData(ReceiveData data)
     {
+        Debug.Log($"OnReceiveDeviceData: {data.DeviceName} {data.IPAddress} {data.FromIPAddress} {data.Message}");
         // Add the received DeviceData to the list
         deviceList.Add(data);
     
         // Sort the list by IP address
-        deviceList = deviceList.OrderBy(deviceData => deviceData.IPAddress).Distinct().ToList();
+        // deviceList = deviceList.OrderBy(deviceData => deviceData.IPAddress).Distinct().ToList();
     
         // Schedule the Repaint to be executed on the main thread
         UnityEditor.EditorApplication.delayCall += Repaint;
