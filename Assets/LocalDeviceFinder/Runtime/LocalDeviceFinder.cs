@@ -52,8 +52,19 @@ public class LocalDeviceFinder
             {
                 byte[] bytes = client.Receive(ref ip);
                 string message = Encoding.ASCII.GetString(bytes);
-                ReceiveData data = new ReceiveData(deviceName, GetLocalIPAddress(), ip.Address.ToString(), message);
-                onReceiveData?.Invoke(data);
+                try
+                {
+                    var data = ReceiveData.FromJson(message);
+                    if (data!=null)
+                    {
+                        onReceiveData?.Invoke(data);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
 
             client.Close();
@@ -76,7 +87,8 @@ public class LocalDeviceFinder
         StartReceiving(rcvPort, data =>
         {
             Debug.Log($"Received message from {data.DeviceName} {data.FromIPAddress}: {data.Message}");
-            SendTo(sndPort, "", data.FromIPAddress);
+            var responseData = new ReceiveData(deviceName, GetLocalIPAddress(), data.FromIPAddress, "ACK");
+            SendTo(sndPort, responseData.ToJson(), data.FromIPAddress);
         });
     }
 
