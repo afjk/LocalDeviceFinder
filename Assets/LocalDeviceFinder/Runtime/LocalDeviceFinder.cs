@@ -44,6 +44,8 @@ public class LocalDeviceFinder
         receiveThread = new Thread(() =>
         {
             UdpClient client = new UdpClient(port);
+            client.EnableBroadcast = true;
+            client.MulticastLoopback = false;
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, port);
 
             while (isReceiving)
@@ -73,6 +75,7 @@ public class LocalDeviceFinder
     {
         StartReceiving(rcvPort, data =>
         {
+            Debug.Log($"Received message from {data.DeviceName} {data.FromIPAddress}: {data.Message}");
             SendTo(sndPort, "", data.IPAddress);
         });
     }
