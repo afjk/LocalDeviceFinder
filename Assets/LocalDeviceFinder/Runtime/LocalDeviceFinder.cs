@@ -34,6 +34,12 @@ public class LocalDeviceFinder
 
     public void StartReceiving(int port, Action<ReceiveData> onReceiveData)
     {
+        if (isReceiving)
+        {
+            Debug.Log("Already receiving data.");
+            return;
+        }
+        
         isReceiving = true;
         receiveThread = new Thread(() =>
         {

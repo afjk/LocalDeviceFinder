@@ -33,6 +33,7 @@ public class LocalDeviceFinderEditor : EditorWindow
             }
             finder.SendBroadcast(sndPort);
             finder.StartReceiving(rcvPort,OnReceiveDeviceData);
+            Debug.Log("Finding started");
         }
         
         if (GUILayout.Button("Start Receiver"))
@@ -43,11 +44,13 @@ public class LocalDeviceFinderEditor : EditorWindow
                 finder.Initialize();
             }
             finder.Ack(rcvPort, sndPort);
+            Debug.Log("Receiver started");
         }
         
         if (GUILayout.Button("Stop Receiver"))
         {
             finder?.StopReceiving();
+            Debug.Log("Receiver stopped");
         }
 
         // Display the list of devices
