@@ -20,8 +20,8 @@ public class LocalDeviceFinderEditor : EditorWindow
 {
     private int sndPort = 8080;
     private int rcvPort = 8080;
-    private LocalDeviceFinder finder;
-    private LocalDeviceFinder responder;
+    private DeviceSearcher searcher;
+    private DeviceResponder responder;
     private List<DeviceData> deviceList = new(); // List to hold the devices
 
     [MenuItem("Tools/Local Device Finder")]
@@ -39,18 +39,18 @@ public class LocalDeviceFinderEditor : EditorWindow
 
         if (GUILayout.Button("Start Finding"))
         {
-            if (finder == null)
+            if (searcher == null)
             {
-                finder = new LocalDeviceFinder(new ReceiveDataFactory());
+                searcher = new DeviceSearcher(new ReceiveDataFactory(), rcvPort);
             }
-            finder.SendBroadcast(sndPort);
-            finder.StartReceiving(rcvPort,OnReceiveDeviceData);
+            searcher.SendBroadcast(sndPort);
+            searcher.StartReceiving(OnReceiveDeviceData);
             Debug.Log("Finding started");
             
             Timer timer = new System.Timers.Timer(5000);
             timer.Elapsed += (sender, e) =>
             {
-                finder.StopReceiving();
+                searcher.StopReceiving();
                 Debug.Log("Finding stopped");
             }; // Stop receiving when the timer elapses
             timer.AutoReset = false;
@@ -61,16 +61,16 @@ public class LocalDeviceFinderEditor : EditorWindow
         {
             if (responder == null)
             {
-                responder = new LocalDeviceFinder(new ReceiveDataFactory());
+                responder = new DeviceResponder(new ReceiveDataFactory(), rcvPort, sndPort);
             }
-            responder.Ack(rcvPort, sndPort);
+            responder.StartListening();
             Debug.Log("Receiver started");
         }
         
         if (GUILayout.Button("Stop Receiver"))
         {
-            finder?.StopReceiving();
-            responder?.StopReceiving();
+            searcher?.StopReceiving();
+            responder?.StopListening();
             Debug.Log("Receiver stopped");
         }
 
