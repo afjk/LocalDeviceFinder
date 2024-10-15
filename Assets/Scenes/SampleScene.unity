@@ -456,7 +456,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33bca338f591b4378a955401218c4682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sndPort: 8081
+  sndPort: 8080
   rcvPort: 8080
 --- !u!4 &1559818833
 Transform:
