@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ReceiveData
 {
-    public string DeviceName { get; set; }
+    public string DeviceName;
 
     public ReceiveData(string deviceName)
     {
