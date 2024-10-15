@@ -24,7 +24,7 @@ public class LocalDeviceFinder
         UdpClient client = new UdpClient();
         client.MulticastLoopback = false;
         IPEndPoint ip = new IPEndPoint(IPAddress.Parse(targetIP), port);
-        byte[] bytes = Encoding.ASCII.GetBytes(message);
+        byte[] bytes = Encoding.Unicode.GetBytes(message);
         client.Send(bytes, bytes.Length, ip);
         client.Close();
     }
@@ -68,7 +68,7 @@ public class LocalDeviceFinder
                         Debug.Log($"{ip.Address.ToString()} is local IP. Skip.");
                         continue;
                     }
-                    string message = Encoding.ASCII.GetString(bytes);
+                    string message = Encoding.Unicode.GetString(bytes);
                     onReceiveData?.Invoke(message,ip.Address.ToString());
                 }
                 catch (SocketException e)
