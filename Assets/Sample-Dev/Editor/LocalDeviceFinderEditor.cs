@@ -36,28 +36,31 @@ public class LocalDeviceFinderEditor : EditorWindow
     {
         GUILayout.Label("Local Device Finder", EditorStyles.boldLabel);
 
+        // ポート設定
         sndPort = EditorGUILayout.IntField("Send Port", sndPort);
-        rcvPort = EditorGUILayout.IntField("Receive Port", rcvPort);
+        rcvPort = sndPort;
 
-        useMulticast = EditorGUILayout.Toggle("Use Multicast", useMulticast);
+        bool newUseMulticast = EditorGUILayout.Toggle("Use Multicast", useMulticast);
 
-        if (useMulticast)
+        if (newUseMulticast)
         {
             multicastIP = EditorGUILayout.TextField("Multicast IP", multicastIP);
         }
 
+        // マルチキャスト設定が変更された場合、searcherとresponderを停止してnullにする
+        if (newUseMulticast != useMulticast)
+        {
+            StopAll(); // 動作中のsearcherやresponderを停止
+            useMulticast = newUseMulticast;
+        }
+
         if (GUILayout.Button("Start Finding"))
         {
+            deviceList.Clear();
             if (searcher == null)
             {
-                if (useMulticast)
-                {
-                    searcher = new DeviceSearcher(new ReceiveDataFactory(), rcvPort, multicastIP);
-                }
-                else
-                {
-                    searcher = new DeviceSearcher(new ReceiveDataFactory(), rcvPort);
-                }
+                searcher = new DeviceSearcher(new ReceiveDataFactory(), rcvPort, useMulticast ? multicastIP : null);
+                searcher.StartReceiving(OnReceiveDeviceData);
             }
 
             if (useMulticast)
@@ -69,9 +72,8 @@ public class LocalDeviceFinderEditor : EditorWindow
                 searcher.SendBroadcast(sndPort);
             }
 
-            searcher.StartReceiving(OnReceiveDeviceData);
             Debug.Log("Finding started");
-            
+
             Timer timer = new System.Timers.Timer(5000);
             timer.Elapsed += (sender, e) =>
             {
@@ -81,30 +83,20 @@ public class LocalDeviceFinderEditor : EditorWindow
             timer.AutoReset = false;
             timer.Start();
         }
-        
+
         if (GUILayout.Button("Start Receiver"))
         {
             if (responder == null)
             {
-                if (useMulticast)
-                {
-                    responder = new DeviceResponder(new ReceiveDataFactory(), rcvPort, sndPort, multicastIP);
-                }
-                else
-                {
-                    responder = new DeviceResponder(new ReceiveDataFactory(), rcvPort, sndPort);
-                }
+                responder = new DeviceResponder(new ReceiveDataFactory(), rcvPort, sndPort, useMulticast ? multicastIP : null);
             }
             responder.StartListening();
             Debug.Log("Receiver started");
         }
-        
+
         if (GUILayout.Button("Stop Receiver"))
         {
-            searcher?.StopReceiving();
-            responder?.StopListening();
-            searcher = null;
-            responder = null;
+            StopAll();
             Debug.Log("Receiver stopped");
         }
 
@@ -115,14 +107,24 @@ public class LocalDeviceFinderEditor : EditorWindow
             GUILayout.Label($"Device: {device.DeviceName}, IP: {device.IpAddress}");
         }
     }
-    
+
     private void OnReceiveDeviceData(IReceiveData idata, string ipAddress)
     {
         var data = idata as ReceiveData;
-        if (data != null)
+        Debug.Log($"OnReceiveDeviceData: {data.DeviceName}");
+        // 既にリストに存在しない場合のみ追加
+        if (!deviceList.Any(d => d.IpAddress == ipAddress))
         {
             deviceList.Add(new DeviceData(data.DeviceName, ipAddress));
-            UnityEditor.EditorApplication.delayCall += Repaint;
         }
+        UnityEditor.EditorApplication.delayCall += Repaint;
+    }
+
+    private void StopAll()
+    {
+        searcher?.StopReceiving();
+        responder?.StopListening();
+        searcher = null;
+        responder = null;
     }
 }

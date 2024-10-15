@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class DeviceResponder
 {
     private IReceiveDataFactory receiveDataFactory;
@@ -26,6 +28,7 @@ public class DeviceResponder
 
     private void SendResponse(string targetIP)
     {
+        Debug.Log($"Send response to {targetIP}");
         var responseData = receiveDataFactory.Create();
         byte[] message = responseData.Serialize();
         communicator.Send(message, targetIP, responsePort);
