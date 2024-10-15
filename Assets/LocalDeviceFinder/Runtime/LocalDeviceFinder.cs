@@ -9,15 +9,15 @@ public class LocalDeviceFinder
 {
     public void SendBroadcast(int port)
     {
-        SendTo(port, "", IPAddress.Broadcast.ToString());
+        SendTo(port, new byte[0], IPAddress.Broadcast.ToString());
     }
     
-    public void SendTo(int port, string message, string targetIP)
+    public void SendTo(int port, byte[] message, string targetIP)
     {
         UdpClient client = new UdpClient();
         client.MulticastLoopback = false;
         IPEndPoint ip = new IPEndPoint(IPAddress.Parse(targetIP), port);
-        byte[] bytes = Encoding.Unicode.GetBytes(message);
+        byte[] bytes = message;
         client.Send(bytes, bytes.Length, ip);
         client.Close();
     }
@@ -28,15 +28,15 @@ public class LocalDeviceFinder
     private UdpClient rcClient;
     public void StartReceiving(int port, Action<ReceiveData, string> onReceiveData)
     {
-        StartClient(port, (message, ipAddress) =>
+        StartClient(port, (receiveData, ipAddress) =>
         {
-            ReceiveData data = ReceiveData.FromJson(message);
+            ReceiveData data = new ReceiveData(receiveData);
             if(data == null) return;
             onReceiveData?.Invoke(data, ipAddress);
         });
     }
     
-    public void StartClient(int port, Action<string, string> onReceiveData)
+    public void StartClient(int port, Action<byte[], string> onReceiveData)
     {
         if (isReceiving)
         {
@@ -62,8 +62,7 @@ public class LocalDeviceFinder
                         Debug.Log($"{ip.Address.ToString()} is local IP. Skip.");
                         continue;
                     }
-                    string message = Encoding.Unicode.GetString(bytes);
-                    onReceiveData?.Invoke(message,ip.Address.ToString());
+                    onReceiveData?.Invoke(bytes,ip.Address.ToString());
                 }
                 catch (SocketException e)
                 {
@@ -95,7 +94,7 @@ public class LocalDeviceFinder
         {
             Debug.Log($"Received message from {ipAddress}: {message}");
             var rcvData = new ReceiveData( deviceName );
-            SendTo(sndPort, rcvData.ToJson(), ipAddress);
+            SendTo(sndPort, rcvData.Serialize(), ipAddress);
         });
     }
 

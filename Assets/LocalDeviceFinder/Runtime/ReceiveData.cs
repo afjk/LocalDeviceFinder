@@ -1,22 +1,53 @@
 using System;
+using System.Text;
 using UnityEngine;
 
-public class ReceiveData
+public interface IReceiveData
 {
-    public string DeviceName;
+    public byte[] Serialize();
+    
+    public IReceiveData Deserialize(byte[] bytes);
+}
+
+public class ReceiveData : IReceiveData
+{
+    public string DeviceName
+    {
+        get => d;
+        set => d = value;
+    }
+
+    public string d; // Device name. Serialize時のkey名を短くするために使用
 
     public ReceiveData(string deviceName)
     {
         DeviceName = deviceName;
     }
 
-    public string ToJson()
+    public ReceiveData(byte[] bytes)
+    {
+        var data = Deserialize(bytes) as ReceiveData;
+        this.DeviceName = data.DeviceName;
+    }
+    
+    private string ToJson()
     {
         return JsonUtility.ToJson(this);
     }
 
-    public static ReceiveData FromJson(string jsonString)
+    private static ReceiveData FromJson(string jsonString)
     {
         return JsonUtility.FromJson<ReceiveData>(jsonString);
+    }
+    
+    public byte[] Serialize()
+    {
+        return Encoding.Unicode.GetBytes(ToJson());
+    }
+
+    public IReceiveData Deserialize(byte[] bytes)
+    {
+        var message = Encoding.Unicode.GetString(bytes);
+        return FromJson(message);
     }
 }
