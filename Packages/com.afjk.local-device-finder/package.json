@@ -1,0 +1,18 @@
+{
+  "name": "com.afjk.local-device-finder",
+  "version": "0.0.1",
+  "displayName": "Local Device Finder",
+  "description": "A package for finding local devices.",
+  "unity": "2019.4",
+  "keywords": ["networking", "devices"],
+  "author": {
+    "name": "afjk",
+    "email": "afjk01@gmail.com"
+  },
+  "samples": [
+    {
+      "displayName": "Sample",
+      "path": "Samples~"
+    }
+  ]
+}

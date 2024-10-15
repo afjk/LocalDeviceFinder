@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.afjk.local-device-finder": {
+      "version": "file:com.afjk.local-device-finder",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.burst": {
       "version": "1.8.13",
       "depth": 1,
