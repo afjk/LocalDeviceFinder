@@ -2,11 +2,6 @@ using System;
 using System.Text;
 using UnityEngine;
 
-public interface IReceiveDataFactory
-{
-    IReceiveData Create();
-}
-
 public class ReceiveDataFactory : IReceiveDataFactory
 {
     string deviceName;
@@ -21,12 +16,6 @@ public class ReceiveDataFactory : IReceiveDataFactory
     }
 }
 
-public interface IReceiveData
-{
-    byte[] Serialize();
-    
-    IReceiveData Deserialize(byte[] bytes);
-}
 
 /// <summary>
 /// Json format
