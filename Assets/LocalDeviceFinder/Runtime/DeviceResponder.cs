@@ -4,20 +4,22 @@ public class DeviceResponder
     private UdpCommunicator communicator;
     private int listenPort;
     private int responsePort;
+    private string multicastIP;
 
-    public DeviceResponder(IReceiveDataFactory receiveDataFactory, int listenPort, int responsePort)
+    public DeviceResponder(IReceiveDataFactory receiveDataFactory, int listenPort, int responsePort, string multicastIP = null)
     {
         this.receiveDataFactory = receiveDataFactory;
         this.listenPort = listenPort;
         this.responsePort = responsePort;
-        this.communicator = new UdpCommunicator();
+        this.multicastIP = multicastIP;
+        this.communicator = new UdpCommunicator(multicastIP);
     }
 
     public void StartListening()
     {
         communicator.StartReceiving(listenPort, (bytes, ipAddress) =>
         {
-            // 受信したブロードキャストメッセージに対して応答を送信
+            // 応答メッセージを送信
             SendResponse(ipAddress);
         });
     }

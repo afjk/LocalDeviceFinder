@@ -11,13 +11,37 @@ public class UdpCommunicator
     private bool isReceiving = false;
     private readonly object lockObject = new object();
 
+    // マルチキャストアドレス（デフォルトはnull）
+    private IPAddress multicastAddress;
+
+    public UdpCommunicator()
+    {
+    }
+
+    // マルチキャストアドレスを設定するコンストラクタ
+    public UdpCommunicator(string multicastIP)
+    {
+        if (!string.IsNullOrEmpty(multicastIP))
+        {
+            multicastAddress = IPAddress.Parse(multicastIP);
+        }
+    }
+
     public void Send(byte[] message, string targetIP, int port)
     {
         using (UdpClient client = new UdpClient())
         {
-            client.EnableBroadcast = true;
-            client.MulticastLoopback = false;
+            client.EnableBroadcast = targetIP == IPAddress.Broadcast.ToString();
+            client.MulticastLoopback = true; // テスト目的で自分自身にも受信させる場合はtrue
+
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(targetIP), port);
+
+            if (multicastAddress != null && multicastAddress.ToString() == targetIP)
+            {
+                // マルチキャストの場合、マルチキャストアドレスを設定
+                client.JoinMulticastGroup(multicastAddress);
+            }
+
             client.Send(message, message.Length, ipEndPoint);
         }
     }
@@ -35,21 +59,39 @@ public class UdpCommunicator
             isReceiving = true;
             receiveThread = new Thread(() =>
             {
-                udpClient = new UdpClient(port);
-                udpClient.EnableBroadcast = true;
-                udpClient.MulticastLoopback = false;
-                IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, port);
+                udpClient = new UdpClient();
+
+                IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, port);
+                udpClient.Client.Bind(localEndPoint);
+
+                if (multicastAddress != null)
+                {
+                    // マルチキャストグループに参加
+                    udpClient.JoinMulticastGroup(multicastAddress);
+                }
+                else
+                {
+                    // ブロードキャスト受信を有効化
+                    udpClient.EnableBroadcast = true;
+                }
+
+                udpClient.MulticastLoopback = true; // テスト目的で自分自身にも受信させる場合はtrue
+
+                IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
                 while (isReceiving)
                 {
                     try
                     {
-                        byte[] bytes = udpClient.Receive(ref ipEndPoint);
-                        string senderIP = ipEndPoint.Address.ToString();
-                        if (senderIP == GetLocalIPAddress())
-                        {
-                            continue; // 自分自身からのメッセージは無視
-                        }
+                        byte[] bytes = udpClient.Receive(ref remoteEndPoint);
+                        string senderIP = remoteEndPoint.Address.ToString();
+
+                        // 自分自身からのメッセージを受信する場合は以下をコメントアウト
+                        // if (senderIP == GetLocalIPAddress())
+                        // {
+                        //     continue;
+                        // }
+
                         onReceiveData?.Invoke(bytes, senderIP);
                     }
                     catch (SocketException e)
@@ -78,6 +120,7 @@ public class UdpCommunicator
 
     private string GetLocalIPAddress()
     {
+        // 既存の実装を使用
         var host = Dns.GetHostEntry(Dns.GetHostName());
         foreach (var ip in host.AddressList)
         {
