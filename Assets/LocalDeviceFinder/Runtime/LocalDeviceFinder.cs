@@ -33,7 +33,16 @@ public class LocalDeviceFinder
     private Thread receiveThread;
 
     private UdpClient rcClient;
-    public void StartReceiving(int port, Action<ReceiveData> onReceiveData)
+    public void StartReceiving(int port, Action<ReceiveData, string> onReceiveData)
+    {
+        StartClient(port, (message, ipAddress) =>
+        {
+            ReceiveData data = ReceiveData.FromJson(message);
+            onReceiveData?.Invoke(data, ipAddress);
+        });
+    }
+    
+    public void StartClient(int port, Action<string, string> onReceiveData)
     {
         if (isReceiving)
         {
@@ -51,10 +60,21 @@ public class LocalDeviceFinder
 
             while (isReceiving)
             {
-                byte[] bytes = rcClient.Receive(ref ip);
-                string message = Encoding.ASCII.GetString(bytes);
-                ReceiveData data = new ReceiveData(deviceName, GetLocalIPAddress(), ip.Address.ToString(), message);
-                onReceiveData?.Invoke(data);
+                try
+                {
+                    byte[] bytes = rcClient.Receive(ref ip);
+                    if (ip.Address.ToString() == GetLocalIPAddress())
+                    {
+                        Debug.Log($"{ip.Address.ToString()} is local IP. Skip.");
+                        continue;
+                    }
+                    string message = Encoding.ASCII.GetString(bytes);
+                    onReceiveData?.Invoke(message,ip.Address.ToString());
+                }
+                catch (SocketException e)
+                {
+                    Debug.Log(e);
+                }
             }
 
             rcClient.Close();
@@ -63,7 +83,7 @@ public class LocalDeviceFinder
 
         receiveThread.Start();
     }
-
+    
     public void StopReceiving()
     {
         isReceiving = false;
@@ -76,11 +96,11 @@ public class LocalDeviceFinder
     
     public void Ack(int rcvPort, int sndPort)
     {
-        StartReceiving(rcvPort, data =>
+        StartClient(rcvPort, (message,ipAddress) =>
         {
-            Debug.Log($"Received message from {data.DeviceName} {data.FromIPAddress}: {data.Message}");
-            var rcvData = new ReceiveData(deviceName, GetLocalIPAddress(), data.FromIPAddress, "ack");
-            SendTo(sndPort, rcvData.ToJson(), data.FromIPAddress);
+            Debug.Log($"Received message from {ipAddress}: {message}");
+            var rcvData = new ReceiveData(deviceName);
+            SendTo(sndPort, rcvData.ToJson(), ipAddress);
         });
     }
 

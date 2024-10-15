@@ -4,12 +4,24 @@ using System.Timers;
 using UnityEditor;
 using UnityEngine;
 
+class DeviceData
+{
+    public DeviceData(string dataDeviceName, string ipAddress)
+    {
+        DeviceName = dataDeviceName;
+        IpAddress = ipAddress;
+    }
+
+    public string DeviceName { get; set; }
+    public string IpAddress { get; set; }
+}
+
 public class LocalDeviceFinderEditor : EditorWindow
 {
     private int sndPort = 8080;
-    private int rcvPort = 8081;
+    private int rcvPort = 8080;
     private LocalDeviceFinder finder;
-    private List<ReceiveData> deviceList = new(); // List to hold the devices
+    private List<DeviceData> deviceList = new(); // List to hold the devices
 
     [MenuItem("Tools/Local Device Finder")]
     public static void ShowWindow()
@@ -22,7 +34,7 @@ public class LocalDeviceFinderEditor : EditorWindow
         GUILayout.Label("Local Device Finder", EditorStyles.boldLabel);
 
         sndPort = EditorGUILayout.IntField("Send Port", sndPort);
-        rcvPort = EditorGUILayout.IntField("Receive Port", rcvPort);
+        rcvPort = sndPort;
 
         if (GUILayout.Button("Start Finding"))
         {
@@ -54,20 +66,17 @@ public class LocalDeviceFinderEditor : EditorWindow
         }
 
         // Display the list of devices
-        foreach (var device in deviceList.OrderBy(deviceData => deviceData.FromIPAddress))
+        foreach (var device in deviceList)
         {
-            GUILayout.Label($"Device: {device.DeviceName}, IP: {device.FromIPAddress}");
+            GUILayout.Label($"Device: {device.DeviceName}, IP: {device.IpAddress}");
         }
     }
     
-    private void OnReceiveDeviceData(ReceiveData data)
+    private void OnReceiveDeviceData(ReceiveData data, string ipAddress)
     {
-        Debug.Log($"OnReceiveDeviceData: {data.DeviceName} {data.IPAddress} {data.FromIPAddress} {data.Message}");
+        Debug.Log($"OnReceiveDeviceData: {data.DeviceName}");
         // Add the received DeviceData to the list
-        deviceList.Add(data);
-    
-        // Sort the list by IP address
-        // deviceList = deviceList.OrderBy(deviceData => deviceData.IPAddress).Distinct().ToList();
+        deviceList.Add(new DeviceData(data.DeviceName, ipAddress));
     
         // Schedule the Repaint to be executed on the main thread
         UnityEditor.EditorApplication.delayCall += Repaint;
