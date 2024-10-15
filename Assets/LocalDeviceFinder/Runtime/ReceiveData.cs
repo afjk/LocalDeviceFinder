@@ -2,19 +2,42 @@ using System;
 using System.Text;
 using UnityEngine;
 
-public interface IReceiveData
+public interface IReceiveDataFactory
 {
-    public byte[] Serialize();
-    
-    public IReceiveData Deserialize(byte[] bytes);
+    IReceiveData Create();
 }
 
+public class ReceiveDataFactory : IReceiveDataFactory
+{
+    string deviceName;
+    public ReceiveDataFactory()
+    {
+        deviceName = SystemInfo.deviceName;
+    }
+    
+    public IReceiveData Create()
+    {
+        return new ReceiveData(deviceName);
+    }
+}
+
+public interface IReceiveData
+{
+    byte[] Serialize();
+    
+    IReceiveData Deserialize(byte[] bytes);
+}
+
+/// <summary>
+/// Json format
+/// {"d": "DeviceName"}
+/// </summary>
 public class ReceiveData : IReceiveData
 {
     public string DeviceName
     {
         get => d;
-        set => d = value;
+        private set => d = value;
     }
 
     public string d; // Device name. Serialize時のkey名を短くするために使用

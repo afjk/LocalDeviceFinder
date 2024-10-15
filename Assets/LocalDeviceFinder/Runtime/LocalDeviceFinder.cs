@@ -7,6 +7,14 @@ using UnityEngine;
 
 public class LocalDeviceFinder
 {
+    
+    private IReceiveDataFactory receiveDataFactory;
+
+    public LocalDeviceFinder(IReceiveDataFactory receiveDataFactory)
+    {
+        this.receiveDataFactory = receiveDataFactory;
+    }
+
     public void SendBroadcast(int port)
     {
         SendTo(port, new byte[0], IPAddress.Broadcast.ToString());
@@ -26,11 +34,12 @@ public class LocalDeviceFinder
     private Thread receiveThread;
 
     private UdpClient rcClient;
-    public void StartReceiving(int port, Action<ReceiveData, string> onReceiveData)
+    public void StartReceiving(int port, Action<IReceiveData, string> onReceiveData)
     {
         StartClient(port, (receiveData, ipAddress) =>
         {
-            ReceiveData data = new ReceiveData(receiveData);
+            IReceiveData data = receiveDataFactory.Create().Deserialize(receiveData);
+//            ReceiveData data = new ReceiveData(receiveData);
             if(data == null) return;
             onReceiveData?.Invoke(data, ipAddress);
         });
@@ -93,7 +102,8 @@ public class LocalDeviceFinder
         StartClient(rcvPort, (message,ipAddress) =>
         {
             Debug.Log($"Received message from {ipAddress}: {message}");
-            var rcvData = new ReceiveData( deviceName );
+            var rcvData = receiveDataFactory.Create();
+//            var rcvData = new ReceiveData( deviceName );
             SendTo(sndPort, rcvData.Serialize(), ipAddress);
         });
     }

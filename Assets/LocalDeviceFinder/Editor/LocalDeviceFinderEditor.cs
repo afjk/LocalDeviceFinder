@@ -41,7 +41,7 @@ public class LocalDeviceFinderEditor : EditorWindow
         {
             if (finder == null)
             {
-                finder = new LocalDeviceFinder();
+                finder = new LocalDeviceFinder(new ReceiveDataFactory());
             }
             finder.SendBroadcast(sndPort);
             finder.StartReceiving(rcvPort,OnReceiveDeviceData);
@@ -61,7 +61,7 @@ public class LocalDeviceFinderEditor : EditorWindow
         {
             if (responder == null)
             {
-                responder = new LocalDeviceFinder();
+                responder = new LocalDeviceFinder(new ReceiveDataFactory());
             }
             responder.Ack(rcvPort, sndPort);
             Debug.Log("Receiver started");
@@ -81,8 +81,9 @@ public class LocalDeviceFinderEditor : EditorWindow
         }
     }
     
-    private void OnReceiveDeviceData(ReceiveData data, string ipAddress)
+    private void OnReceiveDeviceData(IReceiveData idata, string ipAddress)
     {
+        var data = idata as ReceiveData;
         Debug.Log($"OnReceiveDeviceData: {data.DeviceName}");
         // Add the received DeviceData to the list
         deviceList.Add(new DeviceData(data.DeviceName, ipAddress));
