@@ -31,6 +31,7 @@ public class LocalDeviceFinder
         StartClient(port, (message, ipAddress) =>
         {
             ReceiveData data = ReceiveData.FromJson(message);
+            if(data == null) return;
             onReceiveData?.Invoke(data, ipAddress);
         });
     }
