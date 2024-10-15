@@ -45,6 +45,15 @@ public class LocalDeviceFinderEditor : EditorWindow
             finder.SendBroadcast(sndPort);
             finder.StartReceiving(rcvPort,OnReceiveDeviceData);
             Debug.Log("Finding started");
+            
+            Timer timer = new System.Timers.Timer(5000);
+            timer.Elapsed += (sender, e) =>
+            {
+                finder.StopReceiving();
+                Debug.Log("Finding stopped");
+            }; // Stop receiving when the timer elapses
+            timer.AutoReset = false;
+            timer.Start();
         }
         
         if (GUILayout.Button("Start Receiver"))
