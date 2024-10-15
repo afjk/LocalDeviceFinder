@@ -21,6 +21,7 @@ public class LocalDeviceFinderEditor : EditorWindow
     private int sndPort = 8080;
     private int rcvPort = 8080;
     private LocalDeviceFinder finder;
+    private LocalDeviceFinder responder;
     private List<DeviceData> deviceList = new(); // List to hold the devices
 
     [MenuItem("Tools/Local Device Finder")]
@@ -58,17 +59,18 @@ public class LocalDeviceFinderEditor : EditorWindow
         
         if (GUILayout.Button("Start Receiver"))
         {
-            if (finder == null)
+            if (responder == null)
             {
-                finder = new LocalDeviceFinder();
+                responder = new LocalDeviceFinder();
             }
-            finder.Ack(rcvPort, sndPort);
+            responder.Ack(rcvPort, sndPort);
             Debug.Log("Receiver started");
         }
         
         if (GUILayout.Button("Stop Receiver"))
         {
             finder?.StopReceiving();
+            responder?.StopReceiving();
             Debug.Log("Receiver stopped");
         }
 
