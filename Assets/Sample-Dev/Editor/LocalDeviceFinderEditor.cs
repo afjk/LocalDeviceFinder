@@ -78,6 +78,7 @@ public class LocalDeviceFinderEditor : EditorWindow
             timer.Elapsed += (sender, e) =>
             {
                 searcher.StopReceiving();
+                searcher = null;
                 Debug.Log("Finding stopped");
             }; // Stop receiving when the timer elapses
             timer.AutoReset = false;
