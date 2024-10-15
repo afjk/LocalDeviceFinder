@@ -7,13 +7,6 @@ using UnityEngine;
 
 public class LocalDeviceFinder
 {
-    private string deviceName;
-    
-    public void Initialize()
-    {
-        deviceName = SystemInfo.deviceName;
-    }
-    
     public void SendBroadcast(int port)
     {
         SendTo(port, "", IPAddress.Broadcast.ToString());
@@ -96,10 +89,11 @@ public class LocalDeviceFinder
     
     public void Ack(int rcvPort, int sndPort)
     {
+        var deviceName = SystemInfo.deviceName;
         StartClient(rcvPort, (message,ipAddress) =>
         {
             Debug.Log($"Received message from {ipAddress}: {message}");
-            var rcvData = new ReceiveData(deviceName);
+            var rcvData = new ReceiveData( deviceName );
             SendTo(sndPort, rcvData.ToJson(), ipAddress);
         });
     }

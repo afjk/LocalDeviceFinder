@@ -41,7 +41,6 @@ public class LocalDeviceFinderEditor : EditorWindow
             if (finder == null)
             {
                 finder = new LocalDeviceFinder();
-                finder.Initialize();
             }
             finder.SendBroadcast(sndPort);
             finder.StartReceiving(rcvPort,OnReceiveDeviceData);
@@ -53,7 +52,6 @@ public class LocalDeviceFinderEditor : EditorWindow
             if (finder == null)
             {
                 finder = new LocalDeviceFinder();
-                finder.Initialize();
             }
             finder.Ack(rcvPort, sndPort);
             Debug.Log("Receiver started");
