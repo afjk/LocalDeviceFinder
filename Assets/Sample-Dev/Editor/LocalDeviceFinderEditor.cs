@@ -33,7 +33,7 @@ namespace com.afjk.LocalDeviceFinder.sample
         private string currentState = "";
         private string receiveMessage = "";
 
-        [MenuItem("Tools/Local Device Finder")]
+        [MenuItem("Tools/Local Device Finder/Finder")]
         public static void ShowWindow()
         {
             GetWindow<LocalDeviceFinderEditor>("Local Device Finder");
@@ -41,7 +41,7 @@ namespace com.afjk.LocalDeviceFinder.sample
 
         private void OnGUI()
         {
-            GUILayout.Label("Local Device Finder", EditorStyles.boldLabel);
+            GUILayout.Label("Finder", EditorStyles.boldLabel);
 
             // ポート設定
             sndPort = EditorGUILayout.IntField("Send Port", sndPort);
@@ -51,7 +51,7 @@ namespace com.afjk.LocalDeviceFinder.sample
 
             if (newUseMulticast)
             {
-                multicastIP = EditorGUILayout.TextField("Multicast IP", multicastIP);
+                multicastIP = EditorGUILayout.TextField("Multicast IP Address", multicastIP);
             }
 
             if (newUseMulticast != useMulticast)
@@ -122,9 +122,9 @@ namespace com.afjk.LocalDeviceFinder.sample
             }
         }
 
-        private void OnReceiveDeviceData(IReceiveData idata, string ipAddress)
+        private void OnReceiveDeviceData(IReceiveData receiveData, string ipAddress)
         {
-            var data = idata as ReceiveData;
+            var data = receiveData as ReceiveData;
             Debug.Log($"OnReceiveDeviceData: {data.DeviceName}");
             // 既にリストに存在しない場合のみ追加
             if (!deviceList.Any(d => d.IpAddress == ipAddress))
@@ -154,28 +154,27 @@ namespace com.afjk.LocalDeviceFinder.sample
         }
     }
     
-    public class LocalDeviceReceiverEditor : EditorWindow
+    public class LocalDeviceResponderEditor : EditorWindow
     {
         private int sndPort = 8081;
         private int rcvPort = 8080;
-        private DeviceSearcher searcher;
+        private DeviceSearcher sender;
         private DeviceResponder responder;
         private List<DeviceData> deviceList = new(); // List to hold the devices
         private bool useMulticast = false;
         private string multicastIP = "239.0.0.222"; // デフォルトのマルチキャストアドレス
-        Timer findTimer;
         private string currentState = "";
         private string receiveMessage = "";
 
-        [MenuItem("Tools/Local Device Receiver")]
+        [MenuItem("Tools/Local Device Finder/Responder")]
         public static void ShowWindow()
         {
-            GetWindow<LocalDeviceReceiverEditor>("Local Device Receiver");
+            GetWindow<LocalDeviceResponderEditor>("Local Device Finder");
         }
 
         private void OnGUI()
         {
-            GUILayout.Label("Local Device Finder", EditorStyles.boldLabel);
+            GUILayout.Label("Responder", EditorStyles.boldLabel);
 
             // ポート設定
             rcvPort = EditorGUILayout.IntField("Listen Port", rcvPort);
@@ -185,7 +184,7 @@ namespace com.afjk.LocalDeviceFinder.sample
 
             if (newUseMulticast)
             {
-                multicastIP = EditorGUILayout.TextField("Multicast IP", multicastIP);
+                multicastIP = EditorGUILayout.TextField("Multicast IP Address", multicastIP);
             }
 
             if (newUseMulticast != useMulticast)
@@ -194,7 +193,7 @@ namespace com.afjk.LocalDeviceFinder.sample
                 useMulticast = newUseMulticast;
             }
 
-            if (GUILayout.Button("Start Receiver"))
+            if (GUILayout.Button("Start Responder"))
             {
                 deviceList.Clear();
                 StopAll();
@@ -208,22 +207,22 @@ namespace com.afjk.LocalDeviceFinder.sample
                     Debug.Log(receiveMessage);
                     UnityEditor.EditorApplication.delayCall += Repaint;
                 }));
-                Debug.Log("Receiver started");
+                Debug.Log("Responder started");
 
-                currentState = "StartReceiver";
+                currentState = "Responder Running";
             }
 
             if (GUILayout.Button("Stop"))
             {
                 StopAll();
                 deviceList.Clear();
-                Debug.Log("Receiver stopped");
+                Debug.Log("Responder stopped");
 
                 currentState = "Stop";
             }
 
             // Display the list of devices or the receiving state based on the current state
-            if (currentState == "StartReceiver")
+            if (currentState == "Responder Running")
             {
                 GUILayout.Label("Receiving", EditorStyles.boldLabel);
                 if (!string.IsNullOrEmpty(receiveMessage))
@@ -239,13 +238,9 @@ namespace com.afjk.LocalDeviceFinder.sample
 
         private void StopAll()
         {
-            findTimer?.Stop();
-            findTimer?.Dispose();
-            findTimer = null;
-
-            searcher?.StopReceiving();
+            sender?.StopReceiving();
             responder?.StopListening();
-            searcher = null;
+            sender = null;
             responder = null;
             receiveMessage = "";
         }
