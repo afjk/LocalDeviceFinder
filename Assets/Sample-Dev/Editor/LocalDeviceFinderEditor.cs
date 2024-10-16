@@ -96,8 +96,10 @@ public class LocalDeviceFinderEditor : EditorWindow
             responder.StartListening(((bytes, ipAddress) =>
             {
                 var message = Encoding.Unicode.GetString(bytes);
+                if (string.IsNullOrEmpty(message)) return;
                 receiveMessage = $"{message} from {ipAddress}";
                 Debug.Log(receiveMessage);
+                UnityEditor.EditorApplication.delayCall += Repaint;
             }));
             Debug.Log("Receiver started");
             
