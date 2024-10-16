@@ -2,6 +2,7 @@
 [English]((./README.md)) | 日本語
 
 Local Device Finderは、ローカルネットワーク上のデバイスを検出するためのC#ライブラリです。UDPブロードキャストとマルチキャストを使用してディスカバリーメッセージを送信し、デバイスからの応答を待ち受けます。
+
 ## 特徴
 - ローカルネットワーク内のデバイスを検出します。
 - EditorとRuntimeの両方で動作します。
@@ -34,16 +35,20 @@ https://github.com/afjk/LocalDeviceFinder.git?path=/Packages/com.afjk.local-devi
 ## Samples
 Package ManagerからLocal Device Finderのサンプルをインポートしてください。
 
+![image](https://github.com/user-attachments/assets/23d8f72b-4bbe-434e-ad5f-e55686d13c76)
+
 ### Editor Sample
+![image](https://github.com/user-attachments/assets/0db6f3ee-b92e-42d8-807d-8fc645109bda)
 
 LocalDeviceFinderEditorとLocalDeviceResponderEditorは、Unityエディタ内でデバイスの検出と応答をテストするためのサンプルです。 
 
 これらのエディタウィンドウを開くには、Unityエディタで`Tools > Local Device Finder > Finder`または`Tools > Local Device Finder > Responder`をクリックします。  
 
 ### Runtime Sample
+<img src="https://github.com/user-attachments/assets/0d1a92e9-802c-4720-be93-2dd930b2b4fa" width="50%">
 
 `LocalDeviceFinderClient`と`LocalDeviceResponderClient`は、実行時にデバイスの検出と応答を行うためのサンプルです。
 
 これらのクラスは、Unityのゲームオブジェクトにアタッチして使用します。
 
-サンプルシーン`Assets/Samples/Scenes/SampleScene.unity`には、これらのクラスを使用したサンプルが含まれています。
+サンプルシーン`Assets/Samples/Local Device Finder/0.0.1/Sample/Demo/Demo.unity`には、これらのクラスを使用したサンプルが含まれています。
