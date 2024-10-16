@@ -27,6 +27,8 @@ public class LocalDeviceFinderEditor : EditorWindow
     private bool useMulticast = false;
     private string multicastIP = "239.0.0.222"; // デフォルトのマルチキャストアドレス
     Timer findTimer;
+    private string currentState = "";
+    private string receiveMessage = "";
 
     [MenuItem("Tools/Local Device Finder")]
     public static void ShowWindow()
@@ -82,6 +84,8 @@ public class LocalDeviceFinderEditor : EditorWindow
             };
             findTimer.AutoReset = false;
             findTimer.Start();
+            
+            currentState = "StartFinding";
         }
 
         if (GUILayout.Button("Start Receiver"))
@@ -92,29 +96,49 @@ public class LocalDeviceFinderEditor : EditorWindow
             responder.StartListening(((bytes, ipAddress) =>
             {
                 var message = Encoding.Unicode.GetString(bytes);
-                Debug.Log(message);
+                receiveMessage = $"{message} from {ipAddress}";
+                Debug.Log(receiveMessage);
             }));
             Debug.Log("Receiver started");
+            
+            currentState = "StartReceiver";
         }
 
-        if (GUILayout.Button("Stop Receiver"))
+        if (GUILayout.Button("Stop"))
         {
             StopAll();
             deviceList.Clear();
             Debug.Log("Receiver stopped");
+            
+            currentState = "Stop";
         }
-
-        // Display the list of devices
-        GUILayout.Label("Sey Hello to Discovered Devices:", EditorStyles.boldLabel);
-        foreach (var device in deviceList)
+        
+        // Display the list of devices or the receiving state based on the current state
+        if (currentState == "StartFinding")
         {
-            if (GUILayout.Button($"Device: {device.DeviceName}, IP: {device.IpAddress}"))
+            GUILayout.Label("Say Hello to Discovered Devices:", EditorStyles.boldLabel);
+            foreach (var device in deviceList)
             {
-                byte[] message = Encoding.Unicode.GetBytes($"Hello");
-                StopAll();
-                searcher = new DeviceSearcher(new ReceiveDataFactory(), rcvPort, useMulticast ? multicastIP : null);
-                searcher.SendUnicast(message, device.IpAddress, sndPort);
+                if (GUILayout.Button($"Device: {device.DeviceName}, IP: {device.IpAddress}"))
+                {
+                    byte[] message = Encoding.Unicode.GetBytes($"Hello");
+                    StopAll();
+                    searcher = new DeviceSearcher(new ReceiveDataFactory(), rcvPort, useMulticast ? multicastIP : null);
+                    searcher.SendUnicast(message, device.IpAddress, sndPort);
+                }
             }
+        }
+        else if (currentState == "StartReceiver")
+        {
+            GUILayout.Label("Receiving", EditorStyles.boldLabel);
+            if (!string.IsNullOrEmpty(receiveMessage))
+            {
+                GUILayout.Label(receiveMessage, EditorStyles.boldLabel);
+            }
+        }
+        else
+        {
+            GUILayout.Label("Waiting", EditorStyles.boldLabel);
         }
     }
 
@@ -140,5 +164,6 @@ public class LocalDeviceFinderEditor : EditorWindow
         responder?.StopListening();
         searcher = null;
         responder = null;
+        receiveMessage = "";
     }
 }
