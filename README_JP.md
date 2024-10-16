@@ -1,4 +1,5 @@
 # Local Device Finder
+[English]((./README.md)) | 日本語
 
 Local Device Finderは、ローカルネットワーク上のデバイスを検出するためのC#ライブラリです。UDPブロードキャストとマルチキャストを使用してディスカバリーメッセージを送信し、デバイスからの応答を待ち受けます。
 ## 特徴
