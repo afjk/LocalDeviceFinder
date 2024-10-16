@@ -23,7 +23,7 @@ namespace com.afjk.LocalDeviceFinder.sample
     public class LocalDeviceFinderEditor : EditorWindow
     {
         private int sndPort = 8080;
-        private int rcvPort = 8080;
+        private int rcvPort = 8081;
         private DeviceSearcher searcher;
         private DeviceResponder responder;
         private List<DeviceData> deviceList = new(); // List to hold the devices
@@ -156,7 +156,7 @@ namespace com.afjk.LocalDeviceFinder.sample
     
     public class LocalDeviceReceiverEditor : EditorWindow
     {
-        private int sndPort = 8080;
+        private int sndPort = 8081;
         private int rcvPort = 8080;
         private DeviceSearcher searcher;
         private DeviceResponder responder;
