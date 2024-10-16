@@ -17,7 +17,7 @@ Local Device Finder is a C# library for detecting devices on a local network. It
 To install the `Local Device Finder` package using OpenUPM, run the following command in your project's root folder:
 
 ```
-openupm add com.afjk.com.afjk.local-device-finder
+openupm add com.afjk.local-device-finder
 ```
 
 Alternatively, to install the `Local Device Finder` package using Unity Package Manager, follow these steps:
