@@ -24,7 +24,10 @@ namespace com.afjk.LocalDeviceFinder
             communicator.StartReceiving(listenPort, (bytes, ipAddress) =>
             {
                 SearcherIpAddress = ipAddress;
-                SendResponse(ipAddress);
+                if (bytes == null || bytes.Length == 0)
+                {
+                    SendResponse(ipAddress);
+                }
                 onReceive?.Invoke(bytes, ipAddress);
             });
         }
