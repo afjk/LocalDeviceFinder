@@ -31,16 +31,17 @@ namespace com.afjk.LocalDeviceFinder
 
         public void Send(byte[] message, string targetIP, int port)
         {
+            Debug.Log($"Send message to {targetIP} on port: {port}");
             using (UdpClient client = new UdpClient())
             {
+                client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 client.EnableBroadcast = targetIP == IPAddress.Broadcast.ToString();
-                client.MulticastLoopback = true; // テスト目的で自分自身にも受信させる場合はtrue
+                client.MulticastLoopback = true;
 
                 IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(targetIP), port);
 
                 if (multicastAddress != null && multicastAddress.ToString() == targetIP)
                 {
-                    // マルチキャストの場合、マルチキャストアドレスを設定
                     client.JoinMulticastGroup(multicastAddress);
                 }
 
@@ -50,6 +51,7 @@ namespace com.afjk.LocalDeviceFinder
 
         public void StartReceiving(int port, Action<byte[], string> onReceiveData)
         {
+            Debug.Log($"StartReceiving on port: {port}");
             lock (lockObject)
             {
                 if (isReceiving)
@@ -62,6 +64,7 @@ namespace com.afjk.LocalDeviceFinder
                 receiveThread = new Thread(() =>
                 {
                     udpClient = new UdpClient();
+                    udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
                     IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, port);
                     udpClient.Client.Bind(localEndPoint);
@@ -77,7 +80,7 @@ namespace com.afjk.LocalDeviceFinder
                         udpClient.EnableBroadcast = true;
                     }
 
-                    udpClient.MulticastLoopback = true; // テスト目的で自分自身にも受信させる場合はtrue
+                    udpClient.MulticastLoopback = true;
 
                     IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
@@ -87,11 +90,6 @@ namespace com.afjk.LocalDeviceFinder
                         {
                             byte[] bytes = udpClient.Receive(ref remoteEndPoint);
                             string senderIP = remoteEndPoint.Address.ToString();
-
-                            if (senderIP == GetLocalIPAddress())
-                            {
-                                continue;
-                            }
 
                             onReceiveData?.Invoke(bytes, senderIP);
                         }
@@ -119,7 +117,7 @@ namespace com.afjk.LocalDeviceFinder
             }
         }
 
-        private string GetLocalIPAddress()
+        public static string GetLocalIPAddress()
         {
             // 既存の実装を使用
             var host = Dns.GetHostEntry(Dns.GetHostName());

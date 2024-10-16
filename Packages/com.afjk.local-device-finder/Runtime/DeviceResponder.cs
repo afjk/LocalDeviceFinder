@@ -31,6 +31,11 @@ namespace com.afjk.LocalDeviceFinder
 
         private void SendResponse(string targetIP)
         {
+            if(( targetIP == UdpCommunicator.GetLocalIPAddress()) && (listenPort == responsePort))
+            {
+                Debug.Log("Skip sending response to self.");
+                return;
+            }
             Debug.Log($"Send response to {targetIP}");
             var responseData = receiveDataFactory.Create();
             byte[] message = responseData.Serialize();
