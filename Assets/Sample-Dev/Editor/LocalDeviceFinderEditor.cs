@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Timers;
 using UnityEditor;
 using UnityEngine;
@@ -25,6 +26,7 @@ public class LocalDeviceFinderEditor : EditorWindow
     private List<DeviceData> deviceList = new(); // List to hold the devices
     private bool useMulticast = false;
     private string multicastIP = "239.0.0.222"; // デフォルトのマルチキャストアドレス
+    Timer findTimer;
 
     [MenuItem("Tools/Local Device Finder")]
     public static void ShowWindow()
@@ -47,21 +49,18 @@ public class LocalDeviceFinderEditor : EditorWindow
             multicastIP = EditorGUILayout.TextField("Multicast IP", multicastIP);
         }
 
-        // マルチキャスト設定が変更された場合、searcherとresponderを停止してnullにする
         if (newUseMulticast != useMulticast)
         {
-            StopAll(); // 動作中のsearcherやresponderを停止
+            StopAll();
             useMulticast = newUseMulticast;
         }
 
         if (GUILayout.Button("Start Finding"))
         {
             deviceList.Clear();
-            if (searcher == null)
-            {
-                searcher = new DeviceSearcher(new ReceiveDataFactory(), rcvPort, useMulticast ? multicastIP : null);
-                searcher.StartReceiving(OnReceiveDeviceData);
-            }
+            StopAll();
+            searcher = new DeviceSearcher(new ReceiveDataFactory(), rcvPort, useMulticast ? multicastIP : null);
+            searcher.StartReceiving(OnReceiveDeviceData);
 
             if (useMulticast)
             {
@@ -74,38 +73,48 @@ public class LocalDeviceFinderEditor : EditorWindow
 
             Debug.Log("Finding started");
 
-            Timer timer = new System.Timers.Timer(5000);
-            timer.Elapsed += (sender, e) =>
+            findTimer = new System.Timers.Timer(5000);
+            findTimer.Elapsed += (sender, e) =>
             {
                 searcher.StopReceiving();
                 searcher = null;
                 Debug.Log("Finding stopped");
-            }; // Stop receiving when the timer elapses
-            timer.AutoReset = false;
-            timer.Start();
+            };
+            findTimer.AutoReset = false;
+            findTimer.Start();
         }
 
         if (GUILayout.Button("Start Receiver"))
         {
-            if (responder == null)
+            deviceList.Clear();
+            StopAll();
+            responder = new DeviceResponder(new ReceiveDataFactory(), rcvPort, sndPort, useMulticast ? multicastIP : null);
+            responder.StartListening(((bytes, ipAddress) =>
             {
-                responder = new DeviceResponder(new ReceiveDataFactory(), rcvPort, sndPort, useMulticast ? multicastIP : null);
-            }
-            responder.StartListening();
+                var message = Encoding.Unicode.GetString(bytes);
+                Debug.Log(message);
+            }));
             Debug.Log("Receiver started");
         }
 
         if (GUILayout.Button("Stop Receiver"))
         {
             StopAll();
+            deviceList.Clear();
             Debug.Log("Receiver stopped");
         }
 
         // Display the list of devices
-        GUILayout.Label("Discovered Devices:", EditorStyles.boldLabel);
+        GUILayout.Label("Sey Hello to Discovered Devices:", EditorStyles.boldLabel);
         foreach (var device in deviceList)
         {
-            GUILayout.Label($"Device: {device.DeviceName}, IP: {device.IpAddress}");
+            if (GUILayout.Button($"Device: {device.DeviceName}, IP: {device.IpAddress}"))
+            {
+                byte[] message = Encoding.Unicode.GetBytes($"Hello");
+                StopAll();
+                searcher = new DeviceSearcher(new ReceiveDataFactory(), rcvPort, useMulticast ? multicastIP : null);
+                searcher.SendUnicast(message, device.IpAddress, sndPort);
+            }
         }
     }
 
@@ -123,6 +132,10 @@ public class LocalDeviceFinderEditor : EditorWindow
 
     private void StopAll()
     {
+        findTimer?.Stop();
+        findTimer?.Dispose();
+        findTimer = null;
+        
         searcher?.StopReceiving();
         responder?.StopListening();
         searcher = null;

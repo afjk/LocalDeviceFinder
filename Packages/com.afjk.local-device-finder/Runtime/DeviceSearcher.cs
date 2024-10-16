@@ -17,6 +17,11 @@ public class DeviceSearcher
         this.communicator = new UdpCommunicator(multicastIP);
     }
 
+    public void SendUnicast(byte[] data, string ipAddress, int port)
+    {
+        communicator.Send(data, ipAddress, port);
+    }
+    
     public void SendBroadcast(int port)
     {
         communicator.Send(new byte[0], IPAddress.Broadcast.ToString(), port);

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class DeviceResponder
@@ -6,23 +7,23 @@ public class DeviceResponder
     private UdpCommunicator communicator;
     private int listenPort;
     private int responsePort;
-    private string multicastIP;
+    public string SearcherIpAddress { get; private set; }
 
     public DeviceResponder(IReceiveDataFactory receiveDataFactory, int listenPort, int responsePort, string multicastIP = null)
     {
         this.receiveDataFactory = receiveDataFactory;
         this.listenPort = listenPort;
         this.responsePort = responsePort;
-        this.multicastIP = multicastIP;
         this.communicator = new UdpCommunicator(multicastIP);
     }
 
-    public void StartListening()
+    public void StartListening(Action<byte[],string> onReceive = null)
     {
         communicator.StartReceiving(listenPort, (bytes, ipAddress) =>
         {
-            // 応答メッセージを送信
+            SearcherIpAddress = ipAddress;
             SendResponse(ipAddress);
+            onReceive?.Invoke(bytes, ipAddress);
         });
     }
 

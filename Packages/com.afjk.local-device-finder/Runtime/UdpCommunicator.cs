@@ -85,12 +85,11 @@ public class UdpCommunicator
                     {
                         byte[] bytes = udpClient.Receive(ref remoteEndPoint);
                         string senderIP = remoteEndPoint.Address.ToString();
-
-                        // 自分自身からのメッセージを受信する場合は以下をコメントアウト
-                        // if (senderIP == GetLocalIPAddress())
-                        // {
-                        //     continue;
-                        // }
+                        
+                        if (senderIP == GetLocalIPAddress())
+                        {
+                            continue;
+                        }
 
                         onReceiveData?.Invoke(bytes, senderIP);
                     }
