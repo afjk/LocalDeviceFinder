@@ -1,6 +1,6 @@
 
 # Local Device Finder
-[日本語]((./README_JA.md)) | English
+[日本語](./README_JA.md) | English
 
 Local Device Finder is a C# library for detecting devices on a local network. It sends discovery messages using UDP broadcast and multicast, then waits for responses from the devices.
 
