@@ -37,7 +37,7 @@ Import the Local Device Finder samples from the Package Manager.
 ![image](https://github.com/user-attachments/assets/23d8f72b-4bbe-434e-ad5f-e55686d13c76)
 
 ### Editor Sample
-![image](https://github.com/user-attachments/assets/0db6f3ee-b92e-42d8-807d-8fc645109bda)
+![image](https://github.com/user-attachments/assets/4ba8838b-e592-4285-b16c-59fcbe550ca9)
 
 LocalDeviceFinderEditor and LocalDeviceResponderEditor are samples for testing device detection and response within the Unity editor.
 
