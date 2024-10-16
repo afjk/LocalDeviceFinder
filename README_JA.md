@@ -16,7 +16,7 @@ Local Device Finderは、ローカルネットワーク上のデバイスを検�
 OpenUPM を使用して`Local Device Finder`パッケージをインストールするには、プロジェクトのルートフォルダで次のコマンドを実行します：
 
 ```
-openupm add com.afjk.com.afjk.local-device-finder
+openupm add com.afjk.local-device-finder
 ```
 
 または
