@@ -25,7 +25,6 @@ namespace com.afjk.LocalDeviceFinder.sample
         private int sndPort = 8080;
         private int rcvPort = 8081;
         private DeviceSearcher searcher;
-        private DeviceResponder responder;
         private List<DeviceData> deviceList = new(); // List to hold the devices
         private bool useMulticast = false;
         private string multicastIP = "239.0.0.222"; // デフォルトのマルチキャストアドレス
@@ -142,9 +141,7 @@ namespace com.afjk.LocalDeviceFinder.sample
             findTimer = null;
 
             searcher?.StopReceiving();
-            responder?.StopListening();
             searcher = null;
-            responder = null;
             receiveMessage = "";
         }
 
