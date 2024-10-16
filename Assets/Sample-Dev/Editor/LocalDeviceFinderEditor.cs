@@ -147,6 +147,11 @@ namespace com.afjk.LocalDeviceFinder.sample
             responder = null;
             receiveMessage = "";
         }
+
+        private void OnDestroy()
+        {
+            StopAll();
+        }
     }
     
     public class LocalDeviceReceiverEditor : EditorWindow
@@ -243,6 +248,11 @@ namespace com.afjk.LocalDeviceFinder.sample
             searcher = null;
             responder = null;
             receiveMessage = "";
+        }
+        
+        private void OnDestroy()
+        {
+            StopAll();
         }
     }
 }
